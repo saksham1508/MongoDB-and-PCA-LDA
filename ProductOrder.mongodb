@@ -1,0 +1,71 @@
+// [1] display the first 5 rows of Product,Inventory,Order and the User collection
+use ('ProductOrder');
+db.Product.find().limit(5);
+db.Inventory.find().limit(5);
+db.Order.find().limit(5);
+db.User.find().limit(5);
+print()
+
+//Display the Unique Brand and Model names from the Product collection
+use ('ProductOrder');
+db.product.distinct("brand")
+db.product.distinct("model")
+
+//Find the maximum and minimum price of the given products.
+db.product.aggregate([{ $group: { _id: null, maxPrice: { $max: "$price" } } }])
+
+//Display the quantity and last_updated date and time for sku "SNY-11001".
+db.inventory.find(
+    { "sku": "SNY-11001" },
+    { "quantity": 1, "last_updated": 1, "_id": 0 }
+  )
+  
+//List down the count of the total number of users whose role is identified as 'Supplier' from User collection
+db.User.countDocuments({ "role": "Supplier" })
+db.User.count({ "role": "Supplier" })
+
+//Display 'sku', 'code', 'price', 'brand' and 'warranty' information for the model 'Bravia-X'
+db.product.find(
+    { "model": "Bravia-X" },
+    { "sku": 1, "code": 1, "price": 1, "brand": 1, "warranty": 1, "_id": 0 }
+  )
+  
+//Find all the information of Sony products which have an Price greater than 1 lakh
+  db.product.find({
+    "brand": "Sony",
+    "price": { "$gt": 100000 }
+  })
+  
+//Find the total no of products by each Brand and sort them in descending order.
+  db.product.aggregate([
+    {
+      $group: {
+        _id: "$brand", // Group by the "brand" field
+        totalProducts: { $sum: 1 } // Count the number of products for each brand
+      }
+    },
+    {
+      $sort: {
+        totalProducts: -1 // Sort the results by "totalProducts" in descending order
+      }
+    }
+  ])
+
+//Find the total no of users by each role, sort them is descending order and save the results in the temporary collection
+  db.User.aggregate([
+    {
+      $group: {
+        _id: "$role", // Group by the "role" field
+        totalUsers: { $sum: 1 } // Count the number of users in each group
+      }
+    },
+    {
+      $sort: {
+        totalUsers: -1 // Sort the groups by "totalUsers" in descending order
+      }
+    },
+    {
+      $out: "temporaryResultsCollection" // Output the results into a new collection
+    }
+  ])
+  
